@@ -1,0 +1,89 @@
+namespace bellman_graf
+{
+    internal class Program
+    {
+        const int INF = int.MaxValue; //nekonečno (označuje že mezi dvěma uzli neexistuje cesta)
+
+        //graf (pomoci matice sousednosti)
+        static int[,] graph = new int[,]
+        {
+        { 0, 10, INF, 3, INF, INF },
+        { INF, 0, 2, INF, INF, INF },
+        { INF, INF, 0, INF, INF, INF },
+        { INF, INF, INF, 0, 8, INF },
+        { INF, INF, INF, INF, 0, 1 },
+        { INF, INF, 4, INF, INF, 0 }
+        };
+
+        static void Main()
+        {
+            int V = graph.GetLength(0); //počet uzlů v grafu
+
+            //vypíše data 
+            for (int source = 0; source < V; source++)
+            {
+                int[] distance = new int[V];
+                int[] previous = new int[V];
+                BellmanFord(V, source, distance, previous);
+
+                Console.WriteLine($"Cesty z bodu {source}:");
+                for (int target = 0; target < V; target++)
+                {
+                    if (source == target) continue;
+
+                    if (distance[target] == INF)
+                    {
+                        Console.WriteLine($"Cesta do {target}: nejde :(");
+                    }
+                    else
+                    {
+                        var path = GetPath(source, target, previous);
+                        Console.WriteLine($"Cesta do {target}: {string.Join(" -> ", path)} (vzdálenost: {distance[target]})");
+                    }
+                }
+                Console.WriteLine();
+            }
+        }
+
+        static void BellmanFord(int V, int source, int[] dist, int[] prev)
+        {
+            //všechny vzdálenosti se nastaví na nekonečno, kromě výchozího uzlu
+            for (int i = 0; i < V; i++)
+            {
+                dist[i] = INF;
+                prev[i] = -1;
+            }
+            dist[source] = 0;
+
+            //zkouší najít kratší cestu přes uzly...
+            for (int i = 0; i < V - 1; i++)
+            {
+                for (int u = 0; u < V; u++)
+                {
+                    for (int v = 0; v < V; v++)
+                    {
+                        if (graph[u, v] != INF && dist[u] != INF && dist[u] + graph[u, v] < dist[v])
+                        {
+                            dist[v] = dist[u] + graph[u, v];
+                            prev[v] = u;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        //udělá cestu z bodu start do end díky previous grafu (počítá jak daleko je uzel...)
+        static List<int> GetPath(int start, int end, int[] previous)
+        {
+            List<int> path = new List<int>();
+            for (int at = end; at != -1; at = previous[at])
+                path.Insert(0, at);
+
+            if (path[0] != start)
+                return new List<int>();
+
+            return path;
+        }
+    }
+}
